@@ -1,0 +1,998 @@
+ <!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keranjang Belanja - alfaRow str cloud</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --dark: #1b263b;
+            --light: #f8f9fa;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: #f8fafc;
+            color: var(--dark);
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* Agar footer selalu di bawah */
+        }
+        
+        /* Header Modern (copied from index.html) */
+        header {
+            background: white;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: 1rem 0;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .brand-logo img {
+            height: 2.5rem;
+        }
+        
+        .brand-logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .header-menu {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: var(--primary);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+        
+        .header-icons {
+            display: flex;
+            gap: 1.2rem;
+        }
+        
+        .cart-icon-link {
+            text-decoration: none;
+        }
+
+        .cart-icon, .hamburger-menu {
+            cursor: pointer;
+            font-size: 1.3rem;
+            color: var(--dark);
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex; /* Tambahkan ini untuk centring ikon */
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .cart-icon:hover, .hamburger-menu:hover {
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--danger);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        /* Mobile Menu Overlay CSS (copied from index.html) */
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 101; /* Di atas header */
+            display: flex;
+            justify-content: flex-end; /* Dorong menu ke kanan */
+            visibility: hidden; /* Sembunyikan secara default */
+            opacity: 0; /* Untuk transisi fade */
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .mobile-menu-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .mobile-menu-content {
+            background: white;
+            width: 280px; /* Lebar sidebar */
+            max-width: 80%; /* Batasi lebar pada layar sangat kecil */
+            height: 100%;
+            padding: 2rem 1.5rem;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
+            transform: translateX(100%); /* Mulai dari luar layar */
+            transition: transform 0.3s ease-out;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mobile-menu-overlay.active .mobile-menu-content {
+            transform: translateX(0); /* Geser ke dalam */
+        }
+
+        .close-menu-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            color: var(--dark);
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .close-menu-btn:hover {
+            color: var(--danger);
+        }
+
+        .mobile-menu-content ul {
+            list-style: none;
+            margin-top: 2rem;
+            flex-grow: 1; /* Biarkan daftar mengisi ruang yang tersedia */
+        }
+
+        .mobile-menu-content ul li {
+            margin-bottom: 1.2rem;
+        }
+
+        .mobile-menu-content ul li a {
+            text-decoration: none;
+            color: var(--dark);
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.5rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-content ul li a:hover {
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        /* Main Content for Cart Page */
+        main {
+            flex-grow: 1; /* Biarkan main mengisi ruang yang tersedia */
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        h2 {
+            font-size: 2rem;
+            color: var(--dark);
+            position: relative;
+            display: inline-block;
+            margin-bottom: 2rem;
+        }
+        
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 50px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 2px;
+        }
+
+        .cart-content {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap; /* Untuk responsif */
+        }
+
+        .cart-items {
+            flex: 2; /* Mengambil 2 bagian ruang */
+            min-width: 300px; /* Lebar minimum untuk item */
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+        }
+
+        .cart-item {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            position: relative;
+        }
+
+        .cart-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .cart-item-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .cart-item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .cart-item-details {
+            flex-grow: 1;
+        }
+
+        .cart-item-details h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+
+        .cart-item-details p {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .cart-item-price {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1rem;
+            flex-shrink: 0;
+            text-align: right;
+        }
+
+        .remove-item-btn {
+            background: none;
+            border: none;
+            color: var(--danger);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            position: absolute; /* Posisikan di pojok kanan atas */
+            top: 0;
+            right: 0;
+            padding: 0.5rem; /* Beri sedikit padding agar mudah diklik */
+        }
+
+        .remove-item-btn:hover {
+            color: var(--secondary);
+        }
+
+        .cart-summary {
+            flex: 1; /* Mengambil 1 bagian ruang */
+            min-width: 280px; /* Lebar minimum untuk ringkasan */
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            height: fit-content; /* Agar tingginya sesuai konten */
+        }
+
+        .cart-summary h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            color: var(--dark);
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+            color: var(--dark);
+        }
+
+        .summary-row.total {
+            font-weight: 700;
+            font-size: 1.2rem;
+            padding-top: 1rem;
+            border-top: 1px dashed #e2e8f0;
+            margin-top: 1rem;
+        }
+
+        .checkout-form {
+            margin-top: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .form-group input[type="email"],
+        .form-group input[type="tel"],
+        .form-group input[type="text"],
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            outline: none;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+        }
+
+        .checkout-btn:hover {
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+        }
+        
+        /* Empty Cart Message */
+        .empty-cart-message {
+            text-align: center;
+            padding: 3rem;
+            background: white; /* Default background if needed */
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05); /* Default shadow if needed */
+            margin-top: 0; /* Remove top margin here, added to cart-items parent */
+            color: #64748b;
+        }
+        .empty-cart-message i {
+            font-size: 3rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+        .empty-cart-message p {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+        .empty-cart-message a {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            transition: background 0.3s ease;
+        }
+        .empty-cart-message a:hover {
+            background: var(--secondary);
+        }
+
+
+        /* Footer Modern (copied from index.html) */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 4rem 2rem 2rem;
+            margin-top: 4rem;
+            position: relative;
+        }
+        
+        .footer-wave {
+            position: absolute;
+            top: -100px;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1200 120" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"><path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" fill="%231b263b" opacity=".25"/><path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" fill="%231b263b" opacity=".5"/><path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="%231b263b"/></svg>');
+            background-size: cover;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .footer-column h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .footer-column h3::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+        
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .footer-logo img {
+            height: 2rem;
+        }
+        
+        .footer-logo span {
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--accent), var(--success));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .footer-about p {
+            margin-bottom: 1.5rem;
+            color: #94a3b8;
+            line-height: 1.7;
+        }
+        
+        .footer-links ul {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+        
+        .footer-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .footer-links a:hover {
+            color: var(--accent);
+            transform: translateX(5px);
+        }
+        
+        .footer-contact p {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+            color: #94a3b8;
+        }
+        
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .social-icon:hover {
+            background: var(--accent);
+            transform: translateY(-5px);
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 3rem;
+            margin-top: 3rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-container {
+                padding: 0 1rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .hamburger-menu {
+                display: flex;
+            }
+
+            .cart-content {
+                flex-direction: column;
+            }
+
+            .cart-items, .cart-summary {
+                min-width: unset;
+                width: 100%;
+            }
+
+            main {
+                padding: 2rem 1rem;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .hamburger-menu {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="brand-logo">
+                <img src="/codingan selebew/foto/alfa.png" alt="alfa Logo">
+                <h1>alfaRowOffc</h1>
+            </div>
+            
+            <div class="header-menu">
+                <nav class="nav-links">
+                    <a href="index.html">Beranda</a>
+                    <a href="index.html">Produk</a>
+                    <a href="https://alfarow.biz.id/kontak">Kontak</a>
+                </nav>
+                
+                <div class="header-icons">
+                    <a href="keranjang.html" class="cart-icon-link">
+                        <div class="cart-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="cart-count">0</span>
+                        </div>
+                    </a>
+                    <div class="hamburger-menu" id="hamburgerMenu"> 
+                        <i class="fas fa-bars"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main>
+        <h2>Keranjang Belanja Anda</h2>
+
+        <div class="cart-content">
+            <div class="cart-items" id="cartItemsContainer">
+                <div class="empty-cart-message" id="emptyCartMessage" style="display: none;">
+                    <i class="fas fa-shopping-basket"></i>
+                    <p>Keranjang Anda kosong. Yuk, jelajahi produk kami!</p>
+                    <a href="index.html">Belanja Sekarang</a>
+                </div>
+            </div>
+            
+            <div class="cart-summary">
+                <h3>Ringkasan Pesanan</h3>
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span id="subtotal">Rp 0</span>
+                </div>
+                <div class="summary-row">
+                    <span>Diskon (Kode Promo)</span>
+                    <span id="discount">Rp 0</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total</span>
+                    <span id="total">Rp 0</span>
+                </div>
+
+                <form class="checkout-form" id="checkoutForm">
+                    <h3>Detail Kontak & Pesan</h3>
+                    <div class="form-group">
+                        <label for="email">Email <span style="color:red;">*</span></label>
+                        <input type="email" id="email" name="email" placeholder="contoh@gmail.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Nomor HP (WhatsApp) <span style="color:red;">*</span></label>
+                        <input type="tel" id="phone" name="phone" placeholder="Contoh: 6281234567890" required pattern="[0-9]{10,15}" title="Masukkan nomor HP yang valid (minimal 10 digit angka, tanpa spasi/strip). Contoh: 6281234567890">
+                        <small style="color:#666; font-size:0.85em;">Format: 62xxxxxxxxxx (tanpa '+')</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Pesan untuk Penjual <span style="color:red;">*</span></label>
+                        <textarea id="message" name="message" rows="4" placeholder="Contoh: Tolong kirim ke email ini saja" required minlength="10"></textarea>
+                        <small style="color:#666; font-size:0.85em;">Minimal 10 karakter.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="promoCode">Kode Promo (Opsional)</label>
+                        <input type="text" id="promoCode" name="promoCode" placeholder="Masukkan kode promo">
+                    </div>
+
+                    <button type="submit" class="checkout-btn"><i class="fab fa-whatsapp"></i> Checkout via WhatsApp</button>
+                </form>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <div class="footer-wave"></div>
+        <div class="footer-content">
+            <div class="footer-column footer-about">
+                <div class="footer-logo">
+                   <img src="/codingan selebew/foto/alfa.png" alt="alfaRow Logo"> <span>alfaRow</span>
+                </div>
+                <p>Kami menyediakan produk digital berkualitas tinggi untuk membantu perkembangan bisnis dan meningkatkan skill digital Anda.</p>
+                <p>Dapatkan akses instan setelah pembelian!</p>
+            </div>
+            
+            <div class="footer-column footer-links">
+                <h3>Tautan Cepat</h3>
+                <ul>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Beranda</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Produk Populer</a></li>
+                    <li><a href="https://alfarow.biz.id/Diskon/"><i class="fas fa-chevron-right"></i> Promo Spesial</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column footer-links">
+                <h3>Kategori</h3>
+                <ul>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Suntik</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> App premium</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Nokos</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Panel pterodactyl</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Pulsa all operator</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Ai premium</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-column footer-contact">
+                <h3>Hubungi Kami</h3>
+                <p><i class="fas fa-envelope"></i> alfarowoffc.my.id@gmail.com</p>
+                <p><i class="fas fa-phone-alt"></i> https://alfarow.biz.id/kontak</p>
+                <p><i class="fas fa-map-marker-alt"></i>Indonesia</p>
+                
+                <div class="footer-social">
+                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+        <div class="mobile-menu-content">
+            <button class="close-menu-btn" id="closeMenuBtn"><i class="fas fa-times"></i></button>
+            <ul>
+                <li><a href="index.html"><i class="fas fa-home"></i> Beranda</a></li>
+                <li><a href="#"><i class="fas fa-box"></i> Produk</a></li>
+                <li><a href="#"><i class="fas fa-tags"></i> Kategori</a></li>
+                <li><a href="#"><i class="fas fa-info-circle"></i> Tentang</a></li>
+                <li><a href="#"><i class="fas fa-envelope"></i> Kontak</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // === Hamburger Menu Functionality ===
+            const hamburgerMenu = document.getElementById('hamburgerMenu');
+            const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+            const closeMenuBtn = document.getElementById('closeMenuBtn');
+
+            if (hamburgerMenu) {
+                hamburgerMenu.addEventListener('click', function() {
+                    mobileMenuOverlay.classList.add('active');
+                    document.body.style.overflow = 'hidden'; // Mencegah scrolling saat menu terbuka
+                });
+            }
+
+            if (closeMenuBtn) {
+                closeMenuBtn.addEventListener('click', function() {
+                    mobileMenuOverlay.classList.remove('active');
+                    document.body.style.overflow = ''; // Mengembalikan scrolling
+                });
+            }
+
+            if (mobileMenuOverlay) {
+                mobileMenuOverlay.addEventListener('click', function(event) {
+                    if (event.target === mobileMenuOverlay) {
+                        mobileMenuOverlay.classList.remove('active');
+                        document.body.style.overflow = '';
+                    }
+                });
+            }
+
+            // === Keranjang Belanja Functionality ===
+            const cartItemsContainer = document.getElementById('cartItemsContainer');
+            const emptyCartMessage = document.getElementById('emptyCartMessage');
+            const subtotalSpan = document.getElementById('subtotal');
+            const discountSpan = document.getElementById('discount');
+            const totalSpan = document.getElementById('total');
+            const checkoutForm = document.getElementById('checkoutForm');
+            const emailInput = document.getElementById('email');
+            const phoneInput = document.getElementById('phone');
+            const messageInput = document.getElementById('message');
+            const promoCodeInput = document.getElementById('promoCode');
+            const cartCountSpan = document.querySelector('.cart-count'); 
+
+            let cart = JSON.parse(localStorage.getItem('cart')) || []; 
+            const whatsappNumber = '6282129825028'; // Ganti dengan nomor WhatsApp Anda (format internasional tanpa +)
+
+            function updateCartDisplay() {
+                cartItemsContainer.innerHTML = ''; // Clear cart display
+                let subtotal = 0;
+
+                if (cart.length === 0) {
+                    emptyCartMessage.style.display = 'block';
+                    // Optional: adjust styling if cart is empty
+                    cartItemsContainer.style.background = 'none'; 
+                    cartItemsContainer.style.boxShadow = 'none'; 
+                    cartItemsContainer.style.padding = '0'; 
+                } else {
+                    emptyCartMessage.style.display = 'none';
+                    // Restore styling if items are present
+                    cartItemsContainer.style.background = 'white'; 
+                    cartItemsContainer.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.05)'; 
+                    cartItemsContainer.style.padding = '2rem'; 
+
+                    cart.forEach(item => {
+                        const cartItemDiv = document.createElement('div');
+                        cartItemDiv.classList.add('cart-item');
+                        cartItemDiv.dataset.id = item.id;
+                        cartItemDiv.dataset.price = item.price; 
+
+                        const formattedPrice = new Intl.NumberFormat('id-ID', {
+                            style: 'currency',
+                            currency: 'IDR',
+                            minimumFractionDigits: 0
+                        }).format(item.price);
+
+                        cartItemDiv.innerHTML = `
+                            <div class="cart-item-image">
+                                <img src="${item.image}" alt="${item.name}">
+                            </div>
+                            <div class="cart-item-details">
+                                <h3>${item.name}</h3>
+                                <p>Kategori: ${item.category}</p>
+                            </div>
+                            <div class="cart-item-price">${formattedPrice}</div>
+                            <button class="remove-item-btn" data-id="${item.id}"><i class="fas fa-times-circle"></i></button>
+                        `;
+                        cartItemsContainer.appendChild(cartItemDiv);
+                        subtotal += item.price;
+                    });
+                }
+
+                const discountAmount = calculateDiscount(); 
+                const total = subtotal - discountAmount;
+
+                subtotalSpan.textContent = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(subtotal);
+                discountSpan.textContent = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(discountAmount);
+                totalSpan.textContent = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(total);
+                
+                // Update cart count in header
+                cartCountSpan.textContent = cart.length;
+            }
+
+            function calculateDiscount() {
+                const promoCode = promoCodeInput.value.trim().toUpperCase();
+                let discount = 0;
+                let currentSubtotal = cart.reduce((sum, item) => sum + item.price, 0);
+
+                if (promoCode === 'DISKON10') {
+                    discount = currentSubtotal * 0.10; // 10% discount
+                } else if (promoCode === 'GRATISONGKIR') { // Example: another promo code
+                    discount = 0; // Or a fixed amount for shipping
+                }
+                // Add more complex discount logic here if needed
+
+                return discount;
+            }
+
+            function removeFromCart(productId) {
+                cart = cart.filter(item => item.id !== productId);
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateCartDisplay();
+            }
+
+            // Event listener for remove item buttons
+            cartItemsContainer.addEventListener('click', function(event) {
+                if (event.target.closest('.remove-item-btn')) {
+                    const productId = event.target.closest('.remove-item-btn').dataset.id;
+                    removeFromCart(productId);
+                }
+            });
+
+            // Event listener for promo code input changes (to update discount)
+            promoCodeInput.addEventListener('input', updateCartDisplay);
+
+
+            // === Checkout Form Submission ===
+            checkoutForm.addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent default form submission
+
+                // Form validation (browser's native validation from 'required' and 'minlength' handles most)
+                if (cart.length === 0) {
+                    alert('Keranjang Anda kosong. Tambahkan produk sebelum checkout!');
+                    return;
+                }
+
+                // Additional JS validation for message length (as HTML minlength only prevents submit, doesn't show message)
+                if (messageInput.value.length < 10) {
+                    alert('Pesan untuk Penjual wajib diisi minimal 10 karakter.');
+                    messageInput.focus();
+                    return;
+                }
+
+                const customerEmail = emailInput.value;
+                const customerPhone = phoneInput.value;
+                const customerMessage = messageInput.value;
+                const customerPromoCode = promoCodeInput.value.trim();
+
+                let orderDetails = '';
+                cart.forEach((item, index) => {
+                    orderDetails += `${index + 1}. ${item.name} (${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(item.price)})\n`;
+                });
+
+                const subtotalValue = cart.reduce((sum, item) => sum + item.price, 0);
+                const discountValue = calculateDiscount();
+                const totalValue = subtotalValue - discountValue;
+
+                const formattedSubtotal = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(subtotalValue);
+                const formattedDiscount = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(discountValue);
+                const formattedTotal = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(totalValue);
+
+                let whatsappMessage = `Halo alfaRow, salam!\n\n`;
+                whatsappMessage += `Terima kasih telah berbelanja di toko kami, alfaRow str cloud. Berikut detail pesanan Anda:\n\n`;
+                whatsappMessage += `--- Detail Pelanggan ---\n`;
+                whatsappMessage += `Email: ${customerEmail}\n`;
+                whatsappMessage += `No. HP: ${customerPhone}\n`;
+                if (customerPromoCode) {
+                    whatsappMessage += `Kode Promo: *${customerPromoCode}*\n`;
+                }
+                whatsappMessage += `Pesan: _${customerMessage}_\n\n`;
+                whatsappMessage += `--- Item Pesanan ---\n`;
+                whatsappMessage += orderDetails;
+                whatsappMessage += `\nSubtotal: ${formattedSubtotal}\n`;
+                whatsappMessage += `Diskon: ${formattedDiscount}\n`;
+                whatsappMessage += `*Total Pembayaran: ${formattedTotal}*\n\n`;
+                whatsappMessage += `Kami akan segera memproses pesanan Anda kalo sudah bayar sesuai nominal yang tertera di atas. Mohon ditunggu ya!\n\n`;
+                  whatsappMessage += `https://files.catbox.moe/k2n1ag.jpg\n`;
+                whatsappMessage += `Terima kasih banyak atas kepercayaannya.\n`;
+                whatsappMessage += `Salam hangat,\nTim alfaRow str cloud`;
+
+                // Encode message for WhatsApp URL
+                const encodedMessage = encodeURIComponent(whatsappMessage);
+                
+                // Redirect to WhatsApp
+                window.location.href = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+
+                // Optional: Clear cart after successful checkout (uncomment if desired)
+                // cart = [];
+                // localStorage.removeItem('cart');
+                // updateCartDisplay(); 
+            });
+
+            // Initial display update when page loads
+            updateCartDisplay();
+        });
+    </script>
+</body>
+</html>
